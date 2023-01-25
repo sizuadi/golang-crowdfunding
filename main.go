@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"golang-crowdfunding/auth"
+	"golang-crowdfunding/campaign"
 	"golang-crowdfunding/handler"
 	"golang-crowdfunding/helper"
 	"golang-crowdfunding/user"
@@ -23,7 +25,20 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	// repositories
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
+	campaigns, _ := campaignRepository.FindByUserID(1)
+	fmt.Println("========================")
+	fmt.Println(len(campaigns))
+	for _, campaigns := range campaigns {
+		fmt.Println(campaigns.Name)
+		fmt.Println(campaigns.CampaignImages[0].FileName)
+	}
+	fmt.Println("========================")
+
+	// services
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	userHandler := handler.NewUserHandler(userService, authService)

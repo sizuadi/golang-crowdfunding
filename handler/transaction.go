@@ -42,3 +42,19 @@ func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 	response := helper.ApiResponse("Campaign's Transactions", http.StatusOK, "success", transaction.FormatCampaignTransactions(transactions))
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := currentUser.ID
+
+	transactions, err := h.service.GetTransactionByUserID(userID)
+	if err != nil {
+		errors := gin.H{"error": err.Error()}
+		response := helper.ApiResponse("Failed to get user's tansactions", http.StatusBadRequest, "error", errors)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.ApiResponse("User's Transactions", http.StatusOK, "success", transaction.FormatUserTransactions(transactions))
+	c.JSON(http.StatusOK, response)
+}

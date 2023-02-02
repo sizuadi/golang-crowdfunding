@@ -5,6 +5,7 @@ import (
 	"golang-crowdfunding/campaign"
 	"golang-crowdfunding/handler"
 	"golang-crowdfunding/helper"
+	"golang-crowdfunding/payment"
 	"golang-crowdfunding/transaction"
 	"golang-crowdfunding/user"
 	"log"
@@ -33,13 +34,14 @@ func main() {
 	// services
 	userService := user.NewService(userRepository)
 	campaignService := campaign.NewService(campaignRepository)
-	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+	paymentService := payment.NewService()
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
 	authService := auth.NewService()
 
 	// handlers
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
-	transactionHander := handler.NewTransactionHandler(transactionService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	// static
@@ -59,8 +61,9 @@ func main() {
 	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("/campaigns-images", authMiddleware(authService, userService), campaignHandler.UploadImage)
 
-	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHander.GetCampaignTransactions)
-	api.GET("/transactions", authMiddleware(authService, userService), transactionHander.GetUserTransactions)
+	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
+	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
+	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
 	router.Run()
 
 }
